@@ -8,8 +8,8 @@ from math import gcd
 from random import randint
 
 # Environment
-# Version 3.1.0 by islptng
-# Last modified: 8th Feb 2025, 14:56
+# Version 3.1.1 by islptng
+# Last modified: 10th Feb 2025, 20:05
 class Number:
     def simplify(self):
         if self.denominator == 0:
@@ -90,7 +90,8 @@ class Number:
             other = Number(other)
         return self.numerator * other.denominator >= other.numerator * self.denominator
     def __int__(self): return self.numerator // self.denominator
-
+    def __bool__(self): return self.numerator != 0
+    def __float__(self): return float(self.numerator) / float(self.denominator)
 Boolean = bool
 
 class Pair:
@@ -213,7 +214,7 @@ def analyze(code):
 'former':1,'latter':1,'pack':1,'exist':2,
 'reveal':1,'add':2,'multiply':2,'divide':2,
 'range':3,'filtrate':3,'size':1,'let':2,
-'or':2,'and':2,'intersect':2}
+'or':2,'and':2,'intersect':2,'first':1}
     class Cursor: pass # we need a "Cursor" keyword and not a class, just does nothing
     class Tree:
         content = [Cursor]
@@ -305,6 +306,7 @@ def exec1(command):
         elif command[0] ==     "pack": return Set([exec1(args[0])])
         elif command[0] ==    "exist": return a.issubset(b := exec1(args[1])) if isinstance((a := exec1(args[0])), Set) else a in b.objects
         elif command[0] ==   "reveal": return exec1(args[0]).objects[randint(0,len(exec1(args[0]).objects)-1)] if isinstance((a := exec1(args[0])), Set) else randint(int(a.former),int(a.latter))
+        elif command[0] ==    "first": return exec1(args[0]).objects[0]
         elif command[0] ==      "add": return exec1(args[0]) + exec1(args[1])
         elif command[0] ==       "or": return exec1(args[0]) or exec1(args[1])
         elif command[0] == "multiply": return exec1(args[0]) * exec1(args[1])
@@ -332,7 +334,6 @@ def exec1(command):
     except RecursionError:
         print("\n\n\nSorry, but it's Python's fault.\n\
 You have exceeded the maximum recursion depth.")
-        exit()
 
 # Interpret a file.
 if len(argv) > 1:
@@ -344,7 +345,8 @@ if len(argv) > 1:
 
 # IDLE
 def help():
-    "TODO"
+    import webbrowser
+    webbrowser.open("https://esolangs.org/wiki/SLet")
 
 def vars():
     print("================")
@@ -359,7 +361,7 @@ def execute(code):
     lamb = Lambda(code)
     lamb.call()
 
-print("""SLet 3.1.0 by islptng
+print("""SLet 3.1.1 by islptng
 Type "help" for help, "vars" to see variables, and "exit" to quit.""")
 while True:
     code = input("\n=> ")
