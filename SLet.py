@@ -8,8 +8,8 @@ from math import gcd
 from random import randint
 
 # Environment
-# Version 3.1.1 by islptng
-# Last modified: 10th Feb 2025, 20:05
+# Version 3.1.2 by islptng
+# Last modified: 12th Feb 2025, 10:22
 class Number:
     def simplify(self):
         if self.denominator == 0:
@@ -69,6 +69,16 @@ class Number:
         res = Number(numerator, denominator)
         res.simplify()
         return res
+    def __mod__(self, other):
+        if not isinstance(other, Number):
+            other = Number(other)
+        intn = int(self / other)
+        modn = self - other * intn
+        return modn
+    def __floordiv__(self, other):
+        if not isinstance(other, Number):
+            other = Number(other)
+        return int(self / other)
     def __eq__(self, other):
         if not isinstance(other, Number):
             other = Number(other)
@@ -155,7 +165,15 @@ def get_char():
     return returnv
 put_char = lambda x: print(ord(x), end="")
 print_obj = lambda x: print("" if x is None else str(x), end="")
-
+def printdec(n, digits):
+    # print integer part
+    print(int(n),end="")
+    # print decimal part
+    digits = int(digits)
+    if digits > 0: print(end=".")
+    for i in range(digits):
+        n *= 10
+        print(int(n % 10),end="")
 
 def analyze(code):
     def tokenize(code):
@@ -214,7 +232,8 @@ def analyze(code):
 'former':1,'latter':1,'pack':1,'exist':2,
 'reveal':1,'add':2,'multiply':2,'divide':2,
 'range':3,'filtrate':3,'size':1,'let':2,
-'or':2,'and':2,'intersect':2,'first':1}
+'or':2,'and':2,'intersect':2,'first':1,
+'decprint':2,'floordiv':2,'modulo':2}
     class Cursor: pass # we need a "Cursor" keyword and not a class, just does nothing
     class Tree:
         content = [Cursor]
@@ -294,6 +313,7 @@ def exec1(command):
         elif command[0] == "put-char": print(end=chr(int(exec1(args[0]))))
         elif command[0] ==    "input": return Number(input())
         elif command[0] ==    "print": print_obj(exec1(args[0]))
+        elif command[0] == "decprint": printdec(exec1(args[0]), exec1(args[1]))
         elif command[0] ==    "match": return Pair(exec1(args[0]), exec1(args[1]))
         elif command[0] ==  "combine":
             res = Set([])
@@ -313,6 +333,8 @@ def exec1(command):
         elif command[0] ==      "and": return exec1(args[0]) and exec1(args[1])
         elif command[0] =="intersect": return exec1(args[0]).intersect(exec1(args[1]))
         elif command[0] ==   "divide": return exec1(args[0]) / exec1(args[1])
+        elif command[0] == "floordiv": return exec1(args[0]) // exec1(args[1])
+        elif command[0] ==   "modulo": return exec1(args[0]) % exec1(args[1])
         elif command[0] ==    "range":
             fromn = exec1(args[0])
             ton = exec1(args[1])
@@ -361,7 +383,7 @@ def execute(code):
     lamb = Lambda(code)
     lamb.call()
 
-print("""SLet 3.1.1 by islptng
+print("""SLet 3.1.2 by islptng
 Type "help" for help, "vars" to see variables, and "exit" to quit.""")
 while True:
     code = input("\n=> ")
