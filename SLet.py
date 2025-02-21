@@ -8,8 +8,10 @@ from math import gcd
 from random import randint
 
 # Environment
-# Version 3.1.2 by islptng
-# Last modified: 12th Feb 2025, 10:22
+LAST_MODIFIED = "Feb 21 2025,  9:35"
+VERSION = "3.1.3"
+# by islptng
+
 class Number:
     def simplify(self):
         if self.denominator == 0:
@@ -296,7 +298,8 @@ def exec1(command):
     try:
         if not isinstance(command, type([])):
             if isinstance(command, str):
-                if command[0] in variables: return variables[command[0]]
+                if command in variables: return variables[command]
+                else: raise SyntaxError("%s is undefined" % (command))
             return command
         args = command[1:]
         # pass is TODO
@@ -317,15 +320,19 @@ def exec1(command):
         elif command[0] ==    "match": return Pair(exec1(args[0]), exec1(args[1]))
         elif command[0] ==  "combine":
             res = Set([])
-            for i in args: res.append(exec1(i))
+            for i in args:
+                x = exec1(i)
+                if isinstance(x, Set):
+                    for j in x.objects: res.append(j)
+                else: res.append(x)
             return res
         elif command[0] == "opposite": return not a if isinstance((a := exec1(args[0])), Boolean) else (a * Number(-1))
         elif command[0] ==     "swap": return Pair(a.latter, a.former) if isinstance((a := exec1(args[0])), Pair) else (Number(1) / a)
-        elif command[0] ==   "former": return a.former if isinstance((a := exec1(args[0])), Pair) else a.numerator
-        elif command[0] ==   "latter": return a.latter if isinstance((a := exec1(args[0])), Pair) else a.denominator
+        elif command[0] ==   "former": return a.former if isinstance((a := exec1(args[0])), Pair) else Number(a.numerator)
+        elif command[0] ==   "latter": return a.latter if isinstance((a := exec1(args[0])), Pair) else Number(a.denominator)
         elif command[0] ==     "pack": return Set([exec1(args[0])])
         elif command[0] ==    "exist": return a.issubset(b := exec1(args[1])) if isinstance((a := exec1(args[0])), Set) else a in b.objects
-        elif command[0] ==   "reveal": return exec1(args[0]).objects[randint(0,len(exec1(args[0]).objects)-1)] if isinstance((a := exec1(args[0])), Set) else randint(int(a.former),int(a.latter))
+        elif command[0] ==   "reveal": return exec1(args[0]).objects[randint(0,len(exec1(args[0]).objects)-1)] if isinstance((a := exec1(args[0])), Set) else Number(randint(int(a.former),int(a.latter)))
         elif command[0] ==    "first": return exec1(args[0]).objects[0]
         elif command[0] ==      "add": return exec1(args[0]) + exec1(args[1])
         elif command[0] ==       "or": return exec1(args[0]) or exec1(args[1])
@@ -341,7 +348,7 @@ def exec1(command):
             step = exec1(args[2])
             i = fromn
             res = Set([])
-            while i <= ton:
+            while i < ton:
                 res.append(i)
                 i += step
             return res
@@ -383,16 +390,17 @@ def execute(code):
     lamb = Lambda(code)
     lamb.call()
 
-print("""SLet 3.1.2 by islptng
-Type "help" for help, "vars" to see variables, and "exit" to quit.""")
+print("""SLet %s by islptng | %s
+Type "help" for help, "vars" to see variables,
+"clear" to reset variables, and "exit" to quit.""" % (VERSION, LAST_MODIFIED))
 while True:
     code = input("\n=> ")
     if code == "help": help()
     elif code == "vars": vars()
     elif code == "exit": exit()
+    elif code == "clear": variables = {}
     else:
         try:
             execute(code)
         except Exception as e:
             print("ERROR:", e)
-
